@@ -9,10 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * Holds all game data in memory (no database needed).
- * REPLACE THE PLACEHOLDER TEXT BELOW with your real names, hobbies and jokes.
- */
 @Service
 public class CrewService {
 
@@ -23,19 +19,25 @@ public class CrewService {
                        @Value("${suscrew.impostor-id}") String impostorId) {
 
         List<CrewMember> crew = List.of(
-            new CrewMember("m1", "Member One", "Cap'n Almost", "#ff3b4e",
-                "Commander of Good Intentions",
-                "A born leader who confidently steers the group straight into chaos.",
-                List.of("Gaming", "Sleeping through alarms", "Making playlists"),
-                List.of("Leadership", "Slide design", "Panic management"),
-                stats(78, 55, 40, 90),
-                List.of("Never loses calm", "Excellent at delegating"),
-                List.of("Delegates to the wrong person", "Cannot read deadlines"),
-                List.of("Owns 3 alarm clocks and ignores all of them.", "Once called an emergency meeting over pizza toppings."),
-                List.of("\"Who touched the thermostat?\"", "\"Five more minutes!\""),
-                "Keeps the crew on schedule (in theory).",
+            new CrewMember("m1", "Harley Balotro", "Sometimes Retarded", "#ff3b4e",
+                "Pinili BSIT dahil magaling daw siya mag laro ng games sa computer",
+                "Understanding and Loving, pero mahilig mag ragebait",
+                List.of("Gaming", "Riding Motorcycles", "Basketball"),
+                List.of("OA", "Pogi", "Mabaho yung Utot"),
+                m1Stats(35, 75, 95),
+                List.of("Kahit saan kayang tamae", "Professional Ragebaiter"),
+                List.of("Poor asian boy", "Coding sa papel"),
+                List.of(
+                    "Kaya ko mag Wheelie ng motor",
+                    "I can build 3x3 rubiks cube under 1 minute",
+                    "I love lego, my whole room is lego"
+                ),
+                List.of("I am a nerd", "I can be your vibes"),
+                "THE MASTER OF DISASTER OF SAMPALOC MANILA",
                 "wiring",
-                "I was fixing wires the entire time! Ask the electrical panel!", ""),
+                "gagi men, maawa kayo! hindi ako yun ngl",
+                ""
+            ),
             new CrewMember("m2", "Member Two", "Blue Screen", "#3d7bff",
                 "Chief Swipe Officer",
                 "Calm, clever and mildly allergic to mornings. Crashes at the worst moments.",
@@ -94,6 +96,14 @@ public class CrewService {
         );
 
         this.config = new GameConfig(groupName, shipName, impostorId, tasks, clues, crew);
+    }
+
+    private static Map<String, Integer> m1Stats(int brains, int speed, int snacks) {
+        Map<String, Integer> m = new LinkedHashMap<>();
+        m.put("Brains", brains);
+        m.put("Speed", speed);
+        m.put("Snack Power", snacks);
+        return m;
     }
 
     private static Map<String, Integer> stats(int brains, int chaos, int speed, int snacks) {

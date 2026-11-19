@@ -407,7 +407,12 @@ function drawCut() {
     if (t < 1) { bean(ctx, W / 2, H * .62, '#000', { s: 3.2 * u, sil: true, t }); text('???', W / 2, H * .3, 70 * u, '#6ef3ff'); }
     else {
       const k = clamp((t - 1) / .6, 0, 1), s = easeBack(k) * 3.2 * u;
-      bean(ctx, W / 2, H * .62 - Math.sin(Math.min(1, (t - 1) / .6) * Math.PI) * 30 * u, m.color, { s, t, mv: false });
+      const revealY = H * .62 - Math.sin(Math.min(1, (t - 1) / .6) * Math.PI) * 30 * u;
+      if (m.id === 'm1') {
+        if (!cut.harleyImage) { cut.harleyImage = new Image(); cut.harleyImage.src = '/images/harley2.jpg'; }
+        if (cut.harleyImage.complete && cut.harleyImage.naturalWidth) ctx.drawImage(cut.harleyImage, W / 2 - 17 * s, revealY - 50 * s, 34 * s, 50 * s);
+        else bean(ctx, W / 2, revealY, m.color, { s, t, mv: false });
+      } else bean(ctx, W / 2, revealY, m.color, { s, t, mv: false });
       if (t < 1.25) { ctx.fillStyle = `rgba(255,255,255,${1 - (t - 1) / .25})`; ctx.fillRect(0, 0, W, H); }
       if (t > 1.4) { const k2 = clamp((t - 1.4) / .25, 0, 1), sc = 2.6 - 1.6 * k2; ctx.save(); ctx.translate(W / 2, H * .76); ctx.scale(sc, sc); ctx.globalAlpha = k2; text(m.name, 0, 0, Math.min(50, W / 10), m.color); text(`"${m.nickname}"`, 0, 36, Math.min(24, W / 22), '#fff', 'Fredoka'); text(m.role, 0, 66, Math.min(18, W / 26), '#ffd23f', 'Fredoka'); ctx.restore(); }
     }
@@ -429,6 +434,8 @@ function drawCut() {
 /* ---------- 8. UI: HUD, toast, database, meeting, results ---------- */
 let toastT, bannerT;
 function toast(msg, bad) { const e = $('#toast'); e.textContent = msg; e.className = bad ? 'bad' : ''; clearTimeout(toastT); toastT = setTimeout(() => hide('#toast'), 3600); }
+function harleyClueMarkup() { return '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px;text-align:center;font-size:14px"><figure style="margin:0"><img src="/images/harley3.jpg" alt="Chill Guys" style="display:block;width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px"><figcaption>Chill Guys</figcaption></figure><figure style="margin:0"><img src="/images/harley6.jpg" alt="nababaliw pag hindi nakakain" style="display:block;width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px"><figcaption>nababaliw pag hindi nakakain</figcaption></figure></div>'; }
+function harleyClueToast() { const e = $('#toast'); e.innerHTML = `<b>Clue found in Electrical</b>${harleyClueMarkup()}`; e.className = ''; clearTimeout(toastT); toastT = setTimeout(() => hide('#toast'), 3600); }
 function banner(a, b) { const e = $('#banner'); e.innerHTML = `<b>${a}</b><span>${b}</span>`; e.style.animation = 'none'; void e.offsetWidth; e.style.animation = ''; show('#banner'); clearTimeout(bannerT); bannerT = setTimeout(() => hide('#banner'), 3500); }
 
 function hud() {
@@ -456,12 +463,17 @@ function renderDb(sel) {
       <div class="pfGrid"><div><h4>Hobbies</h4><div class="chips">${ch(m.hobbies)}</div></div><div><h4>Skills</h4><div class="chips">${ch(m.skills)}</div></div></div>
       <div><h4>Stats</h4>${Object.entries(m.stats).map(([k, v]) => `<div class="bar"><span>${k}</span><b><i style="width:${v}%"></i></b></div>`).join('')}</div>
       <div class="pfGrid"><div><h4>Strengths</h4><ul>${li(m.strengths)}</ul></div><div><h4>Weaknesses</h4><ul>${li(m.weaknesses)}</ul></div>
-      <div><h4>Random facts</h4><ul>${li(m.funFacts)}</ul></div><div><h4>Inside jokes</h4><ul>${li(m.insideJokes)}</ul></div></div>
+      <div><h4>Random facts</h4><ul>${li(m.funFacts)}</ul></div>${m.id === 'm1' ? '<div><h4>Another fact about me</h4><div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"><figure style="margin:0"><img src="/images/harley5.jpg" alt="A cat giving a shaka sign" style="display:block;width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px"><figcaption>I am a nerd</figcaption></figure><figure style="margin:0"><img src="/images/harley4.jpg" alt="A cat wearing glasses" style="display:block;width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px"><figcaption>I am cool and flexible</figcaption></figure></div></div>' : `<div><h4>Inside jokes</h4><ul>${li(m.insideJokes)}</ul></div>`}</div>
       <div><h4>Special crew assignment</h4><p>${m.assignment}</p></div></div>`;
-    $('#pfAv').appendChild(avCanvas(m.color, false, 150));
+    if (m.id === 'm1') $('#pfAv').innerHTML = '<img src="/images/harley1.jpg" alt="Harley" style="display:block;width:150px;height:150px;object-fit:cover;border-radius:12px">';
+    else $('#pfAv').appendChild(avCanvas(m.color, false, 150));
   }
-  $('#dbClues').innerHTML = S.clues.length ? CFG.clues.filter(k => S.clues.includes(k.id)).map(k => `<div class="clue"><small>${k.room}</small><br>${k.text}</div>`).join('') + `<p>${S.clues.length}/${CFG.clues.length} clues found.</p>`
-    : '<div class="denied">No clues yet. Look for glowing "?" spots on the ship.</div>';
+  const harleyUnlocked = S.unlocked.includes('m1');
+  const notebookClues = CFG.clues.filter(k => S.clues.includes(k.id) && !(harleyUnlocked && k.id === 'c2'));
+  $('#dbClues').innerHTML = (harleyUnlocked ? harleyClueMarkup() : '')
+    + (notebookClues.length ? notebookClues.map(k => `<div class="clue"><small>${k.room}</small><br>${k.text}</div>`).join('') + `<p>${S.clues.length}/${CFG.clues.length} clues found.</p>`
+      : harleyUnlocked ? `<p>${S.clues.length}/${CFG.clues.length} clues found.</p>`
+        : '<div class="denied">No clues yet. Look for glowing "?" spots on the ship.</div>');
 }
 
 function openMeeting() {
@@ -531,7 +543,7 @@ function nearest() {
 function use() {
   if (mode !== 'play' || TK || cut || $('.ov:not(.hidden)')) return;
   const n = nearest(); if (!n) return;
-  if (n.k === 'c') { S.clues.push(n.c.id); save(); Snd.ok(); toast(`Clue found in ${n.c.room}: ${n.c.text}`); return; }
+  if (n.k === 'c') { S.clues.push(n.c.id); save(); Snd.ok(); if (n.c.id === 'c2' && S.unlocked.includes('m1')) harleyClueToast(); else toast(`Clue found in ${n.c.room}: ${n.c.text}`); return; }
   const t = n.t;
   if (S.tasks.includes(t.id)) toast('Task already completed.');
   else if (t.unlocks == null && S.unlocked.length < 4) { Snd.bad(); toast(`Console offline. Find all four crewmates first (${S.unlocked.length}/4).`, true); }
